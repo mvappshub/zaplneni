@@ -1,0 +1,251 @@
+<html><head><base href="https://retro-vinyl-calculator.wasteland" target="_blank">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulačka zaplnění na 75% - Retro Konzole</title>
+<style>
+    body {
+        font-family: 'VT323', monospace;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 10px;
+        background-color: #000;
+        color: #0f0;
+        text-shadow: 0 0 5px #0f0;
+        box-shadow: 0 0 20px #0f0;
+        border: 2px solid #0f0;
+        min-height: 100vh;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+    }
+    body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(
+            0deg,
+            rgba(0, 255, 0, 0.15),
+            rgba(0, 255, 0, 0.15) 1px,
+            transparent 1px,
+            transparent 2px
+        );
+        pointer-events: none;
+        animation: scan 10s linear infinite;
+    }
+    @keyframes scan {
+        0% {
+            background-position: 0 0;
+        }
+        100% {
+            background-position: 0 100%;
+        }
+    }
+    h1 {
+        color: #0f0;
+        text-align: center;
+        font-size: 1.8em;
+        margin: 15px 0;
+    }
+    .calculator {
+        background-color: rgba(0, 50, 0, 0.5);
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #0f0;
+        position: relative;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    label {
+        display: block;
+        margin-top: 10px;
+        font-size: 1em;
+    }
+    input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border: 1px solid #0f0;
+        border-radius: 4px;
+        background-color: #000;
+        color: #0f0;
+        box-sizing: border-box;
+        font-family: 'VT323', monospace;
+        font-size: 1em;
+    }
+    button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin-top: 15px;
+        background-color: #0f0;
+        color: #000;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1.1em;
+        font-family: 'VT323', monospace;
+        transition: all 0.3s ease;
+    }
+    button:hover, button:active {
+        background-color: #0a0;
+        box-shadow: 0 0 10px #0f0;
+    }
+    #result {
+        margin-top: 15px;
+        font-weight: bold;
+        text-align: center;
+        color: #0f0;
+        font-size: 1.1em;
+    }
+    .vinyl-animation {
+        width: 100px;
+        height: 100px;
+        background: conic-gradient(from 0deg, #000 0%, #000 25%, #0f0 25%, #0f0 100%);
+        border-radius: 50%;
+        margin: 15px auto;
+        animation: spin 5s linear infinite;
+        box-shadow: 0 0 15px #0f0;
+    }
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    .crt-effect {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                    linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        background-size: 100% 2px, 3px 100%;
+        pointer-events: none;
+        z-index: 1000;
+    }
+    .hint {
+        margin-top: 10px;
+        font-size: 0.8em;
+        text-align: center;
+        color: #0f0;
+        opacity: 0.7;
+    }
+    /* Optimalizace pro mobilní zařízení */
+    @media (max-width: 600px) {
+        body {
+            padding: 5px;
+        }
+        h1 {
+            font-size: 1.5em;
+        }
+        .calculator {
+            padding: 10px;
+        }
+        input {
+            font-size: 16px; /* Prevents zoom on mobile */
+        }
+        .vinyl-animation {
+            width: 80px;
+            height: 80px;
+        }
+    }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="crt-effect"></div>
+    <h1>Kalkulačka zaplnění na 75%</h1>
+    <div class="vinyl-animation"></div>
+    <div class="calculator">
+        <label for="um1">Land A (µm):</label>
+        <input type="number" id="um1" step="0.1" required inputmode="decimal">
+        
+        <label for="percent1">Procenta zaplnění A:</label>
+        <input type="number" id="percent1" step="0.1" required inputmode="decimal">
+        
+        <label for="um2">Land B (µm):</label>
+        <input type="number" id="um2" step="0.1" required inputmode="decimal">
+        
+        <label for="percent2">Procenta zaplnění B:</label>
+        <input type="number" id="percent2" step="0.1" required inputmode="decimal">
+        
+        <button onclick="calculate()">Vypočítat</button>
+        
+        <div id="result"></div>
+        
+        <div class="hint">TIP: Použijte šipky pro změnu hodnoty po 0.1</div>
+    </div>
+
+    <script>
+        function linearInterpolation(um1, percent1, um2, percent2, targetPercent = 75) {
+            let m = (percent2 - percent1) / (um2 - um1);
+            let b = percent1 - m * um1;
+            let umTarget = (targetPercent - b) / m;
+            return umTarget;
+        }
+
+        function calculate() {
+            let um1 = parseFloat(document.getElementById('um1').value);
+            let percent1 = parseFloat(document.getElementById('percent1').value);
+            let um2 = parseFloat(document.getElementById('um2').value);
+            let percent2 = parseFloat(document.getElementById('percent2').value);
+
+            if (isNaN(um1) || isNaN(percent1) || isNaN(um2) || isNaN(percent2)) {
+                document.getElementById('result').innerHTML = "CHYBA: Neplatný vstup. Zadejte čísla.";
+                return;
+            }
+
+            let result = linearInterpolation(um1, percent1, um2, percent2);
+            result = Math.ceil(result * 10) / 10;
+            document.getElementById('result').innerHTML = `VÝSLEDEK: ${result.toFixed(1)} µm pro 75% zaplnění`;
+            
+            let vinylAnimation = document.querySelector('.vinyl-animation');
+            vinylAnimation.style.background = `conic-gradient(from 0deg, #000 0%, #000 ${75}%, #0f0 ${75}%, #0f0 100%)`;
+        }
+
+        function addNoise() {
+            let noise = document.createElement('div');
+            noise.style.position = 'fixed';
+            noise.style.top = Math.random() * 100 + '%';
+            noise.style.left = Math.random() * 100 + '%';
+            noise.style.width = '1px';
+            noise.style.height = '1px';
+            noise.style.backgroundColor = '#0f0';
+            noise.style.opacity = Math.random() * 0.3;
+            document.body.appendChild(noise);
+            setTimeout(() => {
+                document.body.removeChild(noise);
+            }, 100);
+        }
+        setInterval(addNoise, 50);
+
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function(e) {
+                let value = this.value;
+                if (value.includes('.')) {
+                    let parts = value.split('.');
+                    if (parts[1].length > 1) {
+                        this.value = parseFloat(value).toFixed(1);
+                    }
+                }
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    let step = 0.1;
+                    let currentValue = parseFloat(this.value) || 0;
+                    if (e.key === 'ArrowUp') {
+                        this.value = (currentValue + step).toFixed(1);
+                    } else if (e.key === 'ArrowDown') {
+                        this.value = (currentValue - step).toFixed(1);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
